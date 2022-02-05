@@ -1,7 +1,7 @@
 
 The flow of **APKcrawler** is simple as below.
 
-![Flowchart](./IMG/Flowchart.svg)
+![Flowchart](./doc/IMG/Flowchart.svg)
 
 1. `Crawler` keeps asking `Google Play` to install a new APK on an Android device.
 2. Then `Google Play` sends a response to the device for installation.
