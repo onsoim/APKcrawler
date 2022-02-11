@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup               # pip3 install beautifulsoup4
 from configparser import ConfigParser
 from Google import GOOGLE                   #
 from multiprocessing import Process
-from utils.PICKLE import PICKLE             #
+from PICKLE import PICKLE             #
 from selenium.webdriver.common.by import By # pip3 install selenium
 from time import *
 
