@@ -1,3 +1,9 @@
 
 # temporal ignore till finished project
 *.apk
+
+# data file
+*.pickle
+
+# byte code
+*.pyc
