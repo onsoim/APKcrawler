@@ -1,8 +1,6 @@
 
 from time import *
-
-# pip3 install pure-pyton-adb
-from ppadb.client import Client
+from ppadb.client import Client # pip3 install pure-pyton-adb
 
 
 class ADB:
