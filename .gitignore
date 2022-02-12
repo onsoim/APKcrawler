@@ -3,6 +3,7 @@
 *.apk
 
 # data file
+*.db
 *.pickle
 
 # byte code
