@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup               # pip3 install beautifulsoup4
 from configparser import ConfigParser
 from Google import GOOGLE                   #
 from multiprocessing import Process
-from utils.PICKLE import PICKLE             #
+from PICKLE import PICKLE                   #
 from selenium.webdriver.common.by import By # pip3 install selenium
 from time import *
 
@@ -47,9 +47,12 @@ class GOOGLEPLAY:
         urls = self.pkl.load()
 
         while urls:
+            url = f"{self.bURL}{urls.pop()}"
+            if '?' in url: url += "&hl=en_US&gl=US"
+
             soup = BeautifulSoup(
                 requests.get(
-                    f"{self.bURL}{urls.pop()}&hl=en_US&gl=US"
+                    url
                 ).text,
                 'html.parser'
             )
