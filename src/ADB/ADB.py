@@ -2,6 +2,8 @@
 from time import *
 from ppadb.client import Client # pip3 install pure-pyton-adb
 
+import os
+
 
 class ADB:
     def __init__(self):
@@ -12,8 +14,11 @@ class ADB:
         devices = client.devices()
         self.device0 = devices[0]
 
-        self.timeout = 60
+        self.timeout = 10
         self.APK = None
+
+        self.parent = os.path.dirname(os.path.abspath(__file__ + "/../../"))
+        os.makedirs(f"{self.parent}/APK/", exist_ok=True)
 
     def is_installed(self):
         print(f"[0/3] Wait for {self.APK}")
@@ -29,14 +34,13 @@ class ADB:
     def pull(self):
         print(f"[1/3] Pull {self.APK}")
 
-        import os.path
         import re
 
         dPath = re.findall(
             r"(?=:)(.+)(?==)", 
             self.device0.shell(f"pm list packages -f | grep {self.APK}")
         )[0][1:]
-        hPath = f"{self.APK}.apk"
+        hPath = f"{self.parent}/APK/{self.APK}.apk"
 
         while not os.path.isfile(hPath):
             self.device0.pull(dPath, hPath)
