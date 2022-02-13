@@ -2,12 +2,12 @@
 from bs4 import BeautifulSoup               # pip3 install beautifulsoup4
 from configparser import ConfigParser
 from Google import GOOGLE                   #
-from multiprocessing import Process
 from PICKLE import PICKLE                   #
 from selenium.webdriver.common.by import By # pip3 install selenium
 from time import *
 
 import pyautogui                            # pip3 install pyautogui
+import re
 import requests                             # pip3 install requests
 
 
@@ -37,18 +37,23 @@ class GOOGLEPLAY:
 
             google.setPassword()
             sleep(10)
-            print("[*] DONE")
+
             return True
         # If package installed before
-        except:
-            return False
+        except: return False
+        finally: driver.quit()
 
-    def traversal(self):
+    def traversal(self, packages):
         urls = self.pkl.load()
+        re_package = re.compile(r'details\?id=[^&\n]*')
 
         while urls:
             url = f"{self.bURL}{urls.pop()}"
-            if '?' in url: url += "&hl=en_US&gl=US"
+            if '?' in url:
+                package_name = re_package.findall(url)
+                if len(package_name): 
+                    packages.put([package_name[0][11:]])
+                url += "&hl=en_US&gl=US"
 
             soup = BeautifulSoup(
                 requests.get(
@@ -72,9 +77,12 @@ class GOOGLEPLAY:
 
 
 if __name__ == "__main__":
+    from multiprocessing import Process, Manager
+
     gp = GOOGLEPLAY()
 
-    traversal = Process(target=gp.traversal)
+    packages = Manager().Queue()
+    traversal = Process(target=gp.traversal, args = (packages,))
     traversal.start()
 
     parser = ConfigParser()
