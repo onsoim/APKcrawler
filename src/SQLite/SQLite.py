@@ -1,4 +1,5 @@
 
+import os
 import sqlite3
 
 
@@ -6,8 +7,9 @@ class SQLITE:
     def __init__(self, dbName = './APKcrawler.db'):
         self.con = sqlite3.connect(dbName)
         self.cur = self.con.cursor()
+        self.base = os.path.dirname(os.path.abspath(__file__))
 
-        with open('./sql/create.sql') as f:
+        with open(os.path.join(self.base, 'sql/create.sql')) as f:
             self.cur.execute(f.read())
 
     def build_set(sefl, set):
@@ -29,7 +31,7 @@ class SQLITE:
         return False
 
     def read(self, where = None):
-        with open('./sql/select.sql') as f:
+        with open(os.path.join(self.base, 'sql/select.sql')) as f:
             read = f.read() + self.build_where(where)
 
         return list(self.cur.execute(read))
