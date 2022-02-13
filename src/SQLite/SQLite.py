@@ -17,7 +17,12 @@ class SQLITE:
 
     def build_where(self, where):
         if where:
-            wheres = [ f"{key} IS '{value}'" if value else f"{key} IS NULL" for key, value in where.items() ]
+            wheres = []
+            for key, value in where.items():
+                if value:
+                    if value == "NOT NULL": wheres += [ f"{key} IS NOT NULL" ]
+                    else: wheres += [ f"{key} IS '{value}'" ]
+                else: wheres += [ f"{key} IS NULL" ]
             return f" WHERE {' AND '.join(wheres)}"
         return ""
 
