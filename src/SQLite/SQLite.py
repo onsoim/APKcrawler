@@ -34,7 +34,7 @@ class SQLITE:
         with open(os.path.join(self.base, 'sql/select.sql')) as f:
             read = f.read() + self.build_where(where)
 
-        return list(self.cur.execute(read))
+        return [ package[0] for package in self.cur.execute(read) ]
 
     def update(self, set = None, where = None):
         update = f"UPDATE AppList SET {self.build_set(set)}" + self.build_where(where)
