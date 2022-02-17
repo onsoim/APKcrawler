@@ -49,7 +49,7 @@ def main():
     while True:
         for package, installs in packages.get():
             if installs >= iINF:
-                sqlite.create(package)
+                sqlite.create(package, installs)
             # for package in sqlite.read({"install_date": None}):
                 if gp.install(package):
                     sqlite.update(
