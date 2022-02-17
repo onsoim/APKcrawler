@@ -1,0 +1,4 @@
+beautifulsoup4==4.10.0
+pure-python-adb==0.3.0.dev0
+PyAutoGUI==0.9.53
+undetected-chromedriver==3.1.3
