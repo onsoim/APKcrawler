@@ -25,26 +25,29 @@ if __name__ == "__main__":
     adb = ADB()
 
     while True:
-        for package in packages.get():
-            sqlite.create(package)
-        # for package in sqlite.read({"install_date": None}):
-            if gp.install(parser['GOOGLE'], package):
-                sqlite.update(
-                    set = {
-                        "install_date": datetime.now()
-                    }, 
-                    where = {
-                        "package_name": package
-                    }
-                )
-        for package in sqlite.read({"extract_date": None, "install_date": "NOT NULL"}):
-            adb.setAPK(package)
-            if adb.is_installed() and adb.pull() and adb.uninstall():
-                sqlite.update(
-                    set = {
-                        "extract_date": datetime.now()
-                    }, 
-                    where = {
-                        "package_name": package
-                    }
-                )
+        try:
+            for package in packages.get():
+                sqlite.create(package)
+            # for package in sqlite.read({"install_date": None}):
+                if gp.install(parser['GOOGLE'], package):
+                    sqlite.update(
+                        set = {
+                            "install_date": datetime.now()
+                        }, 
+                        where = {
+                            "package_name": package
+                        }
+                    )
+            for package in sqlite.read({"extract_date": None, "install_date": "NOT NULL"}):
+                adb.setAPK(package)
+                if adb.is_installed() and adb.pull() and adb.uninstall():
+                    print(f"[3/3] Done {package}")
+                    sqlite.update(
+                        set = {
+                            "extract_date": datetime.now()
+                        }, 
+                        where = {
+                            "package_name": package
+                        }
+                    )
+        except Exception as e: print(e)
