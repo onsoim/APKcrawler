@@ -12,14 +12,14 @@ from time import *
 
 
 if __name__ == "__main__":
-    gp = GOOGLEPLAY()
+    parser = ConfigParser()
+    parser.read('./GooglePlay/config.ini')
+
+    gp = GOOGLEPLAY(parser['GOOGLE'])
 
     packages = Manager().Queue()
     traversal = Process(target=gp.traversal, args = (packages,))
     traversal.start()
-
-    parser = ConfigParser()
-    parser.read('./GooglePlay/config.ini')
 
     sqlite = SQLITE()
     adb = ADB()
@@ -29,7 +29,7 @@ if __name__ == "__main__":
             for package in packages.get():
                 sqlite.create(package)
             # for package in sqlite.read({"install_date": None}):
-                if gp.install(parser['GOOGLE'], package):
+                if gp.install(package):
                     sqlite.update(
                         set = {
                             "install_date": datetime.now()
