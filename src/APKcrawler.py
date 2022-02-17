@@ -34,6 +34,7 @@ def main():
     parser = ConfigParser()
     parser.read('./GooglePlay/config.ini')
 
+    iINF = int(parser['GOOGLEPLAY']['installs'])
     gp = GOOGLEPLAY(parser['GOOGLE'])
 
     packages = Manager().Queue()
@@ -46,18 +47,19 @@ def main():
     sqlite = SQLITE()
 
     while True:
-        for package in packages.get():
-            sqlite.create(package)
-        # for package in sqlite.read({"install_date": None}):
-            if gp.install(package):
-                sqlite.update(
-                    set = {
-                        "install_date": datetime.now()
-                    },
-                    where = {
-                        "package_name": package
-                    }
-                )
+        for package, installs in packages.get():
+            if installs >= iINF:
+                sqlite.create(package)
+            # for package in sqlite.read({"install_date": None}):
+                if gp.install(package):
+                    sqlite.update(
+                        set = {
+                            "install_date": datetime.now()
+                        },
+                        where = {
+                            "package_name": package
+                        }
+                    )
 
 if __name__ == "__main__":
     while True:
