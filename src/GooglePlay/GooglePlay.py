@@ -6,42 +6,61 @@ from PICKLE import PICKLE                   #
 from selenium.webdriver.common.by import By # pip3 install selenium
 from time import *
 
+import json
 import pyautogui                            # pip3 install pyautogui
 import re
 import requests                             # pip3 install requests
 
 
 class GOOGLEPLAY:
-    def __init__(self):
+    def __init__(self, config):
         self.bURL   = "https://play.google.com"
         self.pkl    = PICKLE("./urls.pickle")
 
-    def install(self, config, package_name):
-        google = GOOGLE()
-        google.login(config)
+        self.google = GOOGLE()
+        self.google.login(config)
 
-        driver = google.driver
-        driver.get(f"{self.bURL}/web/store/apps/details?id={package_name}&hl=en_US")
-        driver.implicitly_wait(5)
+        self.driver = self.google.driver
 
-        driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[1]/button').click()
-        driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[2]/div/ul/li[1]').click()
+    def install(self, package_name):
+        self.driver.get(f"{self.bURL}/web/store/apps/details?id={package_name}&hl=en_US")
+        self.driver.implicitly_wait(5)
+
+        self.driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[1]/button').click()
+        self.driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[2]/div/ul/li[1]').click()
 
         # Check already installed or not
         try:
-            driver.find_element(By.CSS_SELECTOR, '[aria-label="Install"]').click()
+            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Install"]').click()
             sleep(5)
             
             pyautogui.press('enter')
             sleep(3)
 
-            google.setPassword()
+            self.google.setPassword()
             sleep(10)
 
             return True
         # If package installed before
         except: return False
-        finally: driver.quit()
+
+    def parser(self, url):
+        SCRIPT  = re.compile("AF_initDataCallback[\s\S]*?<\/script")
+        KEY     = re.compile("(ds:.*?)'")
+        VALUE   = re.compile("data:([\s\S]*?), sideChannel: {}}\);<\/")
+
+        for match in SCRIPT.findall(requests.get(url).text):
+            key_match = KEY.findall(match)
+            value_match = VALUE.findall(match)
+
+            if key_match and value_match:
+                value = json.loads(value_match[0])
+
+                try:
+                    if key_match[0] == "ds:5":
+                        return value[0][12][9][2]
+                except Exception as e: print(e)
+        return -1
 
     def traversal(self, packages):
         urls = self.pkl.load()
@@ -50,10 +69,13 @@ class GOOGLEPLAY:
         while urls:
             url = f"{self.bURL}{urls.pop()}"
             if '?' in url:
+                url += "&hl=en_US&gl=US"
                 package_name = re_package.findall(url)
                 if len(package_name): 
-                    packages.put([package_name[0][11:]])
-                url += "&hl=en_US&gl=US"
+                    packages.put([(
+                        package_name[0][11:],
+                        self.parser(url)
+                    )])
 
             soup = BeautifulSoup(
                 requests.get(
@@ -79,14 +101,14 @@ class GOOGLEPLAY:
 if __name__ == "__main__":
     from multiprocessing import Process, Manager
 
-    gp = GOOGLEPLAY()
+    parser = ConfigParser()
+    parser.read('config.ini')
+
+    gp = GOOGLEPLAY(parser['GOOGLE'])
 
     packages = Manager().Queue()
     traversal = Process(target=gp.traversal, args = (packages,))
     traversal.start()
 
-    parser = ConfigParser()
-    parser.read('config.ini')
-
-    install = Process(target=gp.install, args=(parser['GOOGLE'], "com.supercell.brawlstars"))
+    install = Process(target=gp.install, args=("com.supercell.brawlstars", ))
     install.start()

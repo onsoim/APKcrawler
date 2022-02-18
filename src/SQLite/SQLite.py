@@ -26,8 +26,8 @@ class SQLITE:
             return f" WHERE {' AND '.join(wheres)}"
         return ""
 
-    def create(self, package_name = None):
-        create = f"INSERT INTO AppList (package_name) VALUES ('{package_name}')"
+    def create(self, package_name = None, installs = 0):
+        create = f"INSERT INTO AppList (package_name, installs) VALUES ('{package_name}', {installs})"
 
         if len(self.read({'package_name': package_name})) == 0:
             self.cur.execute(create)
@@ -63,7 +63,8 @@ if __name__ == '__main__':
     # U
     sqlite.update(
         set = {
-            "install_date": datetime.datetime.now()
+            "install_date": datetime.datetime.now(),
+            "installs": 500000
         }, 
         where = {
             "install_date": None,
