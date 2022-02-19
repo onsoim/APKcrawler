@@ -55,16 +55,16 @@ def main():
                                 where   = { "package_name": package }
                             )
 
-        if extracts.empty():
-            for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
-                extracts.put([package])
-
         if not extracts_t.empty():
             for package, t in extracts_t.get():
                 sqlite.update(
                     set     = { "extract_date": t },
                     where   = { "package_name": package }
                 )
+
+        if extracts.empty():
+            for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
+                extracts.put([package])
 
 if __name__ == "__main__":
     while True:
