@@ -77,39 +77,41 @@ class GOOGLEPLAY:
         return -1
 
     def traversal(self, packages):
-        urls = self.pkl.load()
-        re_package = re.compile(r'details\?id=[^&\n]*')
+        try:
+            urls = self.pkl.load()
+            re_package = re.compile(r'details\?id=[^&\n]*')
 
-        while urls:
-            url = f"{self.bURL}{urls.pop()}"
-            if '?' in url:
-                url += "&hl=en_US&gl=US"
-                package_name = re_package.findall(url)
-                if len(package_name): 
-                    packages.put([(
-                        package_name[0][11:],
-                        self.parser(url)
-                    )])
+            while urls:
+                url = f"{self.bURL}{urls.pop()}"
+                if '?' in url:
+                    url += "&hl=en_US&gl=US"
+                    package_name = re_package.findall(url)
+                    if len(package_name): 
+                        packages.put([(
+                            package_name[0][11:],
+                            self.parser(url)
+                        )])
 
-            soup = BeautifulSoup(
-                requests.get(
-                    url
-                ).text,
-                'html.parser'
-            )
+                soup = BeautifulSoup(
+                    requests.get(
+                        url
+                    ).text,
+                    'html.parser'
+                )
 
-            for a in soup.find_all('a', href=True):
-                href = a['href']
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
 
-                if not href.startswith("/"):
-                    if href.startswith(self.bURL):
-                        href = href.split(".com")[1]
-                    else: continue
+                    if not href.startswith("/"):
+                        if href.startswith(self.bURL):
+                            href = href.split(".com")[1]
+                        else: continue
 
-                if href.startswith("/store/apps") or href.startswith("/store/games"):
-                    urls.add(href)
+                    if href.startswith("/store/apps") or href.startswith("/store/games"):
+                        urls.add(href)
 
-            self.pkl.dump(urls)
+                self.pkl.dump(urls)
+        except Exception as e: print(e)
 
 
 if __name__ == "__main__":
