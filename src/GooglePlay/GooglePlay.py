@@ -35,17 +35,21 @@ class GOOGLEPLAY:
 
         # Check already installed or not
         try:
-            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Install"]')))
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Install"]').click()
-            sleep(5)
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[jscontroller="soHxf"]')))
+            msg = self.driver.find_element(By.CSS_SELECTOR, '[class="AqX8Cf"]').text
+            if msg == "This app is available for your device":
 
-            ActionChains(self.driver).send_keys(Keys.ENTER).perform()
+                self.driver.find_element(By.CSS_SELECTOR, '[jscontroller="soHxf"]').click()
+                sleep(5)
 
-            self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input')))
-            self.google.setPassword()
-            sleep(10)
+                ActionChains(self.driver).send_keys(Keys.ENTER).perform()
 
-            return (True, datetime.now())
+                self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input')))
+                self.google.setPassword()
+                sleep(10)
+
+                return (True, datetime.now())
+            raise Exception(f"[e] {package_name}: {msg}")
 
         # If package installed before
         except Exception as e:
