@@ -6,62 +6,69 @@ from ADB.ADB import ADB                         #
 from configparser import ConfigParser
 from datetime import datetime
 from GooglePlay.GooglePlay import GOOGLEPLAY    #
-from multiprocessing import Process, Manager
+from multiprocessing import Manager, Process
 from SQLite.SQLite import SQLITE                #
 from time import *
 
 
-def jobA():
+def jobA(extracts, extracts_t):
     adb = ADB()
-    sqlite = SQLITE()
 
     while True:
-        for package in sqlite.read({"extract_date": None, "install_date": "NOT NULL"}):
-            adb.setAPK(package)
-            if adb.is_installed() and adb.pull() and adb.uninstall():
-                sqlite.update(
-                    set = {
-                        "extract_date": datetime.now()
-                    }, 
-                    where = {
-                        "package_name": package
-                    }
-                )
-                print(f"[3/3] Done {package}")
-        sleep(3)
+        if not extracts.empty():
+            for package in extracts.get():
+                adb.setAPK(package)
+                if adb.is_installed() and adb.pull() and adb.uninstall():
+                    print(f"[3/3] Done {package}")
+                    extracts_t.put([(
+                        package,
+                        datetime.now()
+                    )])
+        else: sleep(3)
 
 def main():
     parser = ConfigParser()
-    parser.read('./GooglePlay/config.ini')
+    parser.read('./config.ini')
 
     iINF = int(parser['GOOGLEPLAY']['installs'])
     gp = GOOGLEPLAY(parser['GOOGLE'])
 
-    packages = Manager().Queue()
-    traversal = Process(target=gp.traversal, args = (packages,))
-    traversal.start()
+    packages    = Manager().Queue()
+    extracts    = Manager().Queue()
+    extracts_t  = Manager().Queue()
 
-    adb = Process(target=jobA)
-    adb.start()
+    Process(target = gp.traversal, args = (packages,)).start()
+    Process(target = jobA, args = (extracts, extracts_t)).start()
 
     sqlite = SQLITE()
 
     while True:
-        for package, installs in packages.get():
-            if installs >= iINF:
-                sqlite.create(package, installs)
-            # for package in sqlite.read({"install_date": None}):
-                if gp.install(package):
-                    sqlite.update(
-                        set = {
-                            "install_date": datetime.now()
-                        },
-                        where = {
-                            "package_name": package
-                        }
-                    )
+        if not packages.empty():
+            for package, cnt in packages.get():
+                if cnt >= iINF:
+                    sqlite.create(package, cnt)
+                    res, t = gp.install(package)
+                    if res:
+                        print(f"[I] {package}")
+                        sqlite.update(
+                            set     = { "install_date": t },
+                            where   = { "package_name": package }
+                        )
+
+        for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
+            extracts.put(package)
+
+        if not extracts_t.empty():
+            for package, t in extracts_t.get():
+                sqlite.update(
+                    set     = { "extract_date": t },
+                    where   = { "package_name": package }
+                )
 
 if __name__ == "__main__":
     while True:
         try: main()
-        except Exception as e: print(e)
+        except Exception as e:
+            import inspect, os
+            print(f"[*] {os.path.abspath(__file__)} > {inspect.stack()[0][3]}")
+            print(e)
