@@ -39,7 +39,7 @@ class GOOGLEPLAY:
             msg = self.driver.find_element(By.CSS_SELECTOR, '[class="AqX8Cf"]').text
             if msg == "This app is available for your device":
 
-                self.driver.find_element(By.CSS_SELECTOR, '[jscontroller="soHxf"]').click()
+                self.driver.find_element(By.CSS_SELECTOR, '[class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc MjT6xe sOCCfd brKGGd BhQfub  zwjsl"]').click()
                 sleep(5)
 
                 ActionChains(self.driver).send_keys(Keys.ENTER).perform()
