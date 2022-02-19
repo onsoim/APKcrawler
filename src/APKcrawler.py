@@ -45,15 +45,23 @@ def main():
     while True:
         if not packages.empty():
             for package, cnt in packages.get():
-                if cnt >= iINF:
-                    if sqlite.create(package, cnt):
-                        res, t = gp.install(package)
-                        if res:
-                            print(f"[I] {package}")
-                            sqlite.update(
-                                set     = { "install_date": t },
-                                where   = { "package_name": package }
-                            )
+                if cnt >= iINF and sqlite.create(package, cnt):
+                    res, t = gp.install(package)
+                    if res:
+                        print(f"[I] {package}")
+                        sqlite.update(
+                            set     = { "install_date": t },
+                            where   = { "package_name": package }
+                        )
+        else:
+            for package in sqlite.read({"install_date": None}):
+                res, t = gp.install(package)
+                if res:
+                    print(f"[I] {package}")
+                    sqlite.update(
+                        set     = { "install_date": t },
+                        where   = { "package_name": package }
+                    )
 
         if not extracts_t.empty():
             for package, t in extracts_t.get():
