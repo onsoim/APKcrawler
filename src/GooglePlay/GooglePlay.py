@@ -30,11 +30,8 @@ class GOOGLEPLAY:
         self.driver = self.google.driver
         self.wait   = WebDriverWait(self.driver, 60)
 
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Search"]')))
         self.driver.get(f"{self.bURL}/web/store/apps/details?id={package_name}&hl=en_US")
-
-        self.driver.implicitly_wait(5)
-        self.driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[1]/button').click()
-        self.driver.find_element(By.XPATH, '//*[@id="kO001e"]/header/nav/div/c-wiz/div/div/div[2]/div/ul/li[1]').click()
 
         # Check already installed or not
         try:
@@ -42,9 +39,7 @@ class GOOGLEPLAY:
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Install"]').click()
             sleep(5)
 
-            # pyautogui.press('enter')//*[@id="yDmH0d"]/div/div/div[2]/div[3]/span/button
             ActionChains(self.driver).send_keys(Keys.ENTER).perform()
-            # sleep(3)
 
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input')))
             self.google.setPassword()
