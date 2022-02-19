@@ -44,7 +44,6 @@ class GOOGLEPLAY:
 
                 ActionChains(self.driver).send_keys(Keys.ENTER).perform()
 
-                self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input')))
                 self.google.setPassword()
                 sleep(10)
 
