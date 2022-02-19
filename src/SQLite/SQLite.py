@@ -33,6 +33,8 @@ class SQLITE:
             self.cur.execute(create)
             self.con.commit()
             return True
+        elif len(self.read({'package_name': package_name, 'install_date': None})) == 0:
+            return True
         return False
 
     def read(self, where = None):
