@@ -46,14 +46,14 @@ def main():
         if not packages.empty():
             for package, cnt in packages.get():
                 if cnt >= iINF:
-                    sqlite.create(package, cnt)
-                    res, t = gp.install(package)
-                    if res:
-                        print(f"[I] {package}")
-                        sqlite.update(
-                            set     = { "install_date": t },
-                            where   = { "package_name": package }
-                        )
+                    if sqlite.create(package, cnt):
+                        res, t = gp.install(package)
+                        if res:
+                            print(f"[I] {package}")
+                            sqlite.update(
+                                set     = { "install_date": t },
+                                where   = { "package_name": package }
+                            )
 
         for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
             extracts.put(package)
