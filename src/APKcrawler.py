@@ -56,7 +56,8 @@ def main():
                             )
 
         for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
-            extracts.put([package])
+            if package not in extracts:
+                extracts.put([package])
 
         if not extracts_t.empty():
             for package, t in extracts_t.get():
