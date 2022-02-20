@@ -14,6 +14,6 @@ class PICKLE:
         if os.path.isfile(self.fName):
             with open(self.fName, 'rb') as f:
                 data = pickle.load(f)
-        else: data = { "" }
+        else: data = None
 
         return data

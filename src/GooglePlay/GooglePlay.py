@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from time import *
 
 import json
+import heapq
 import re
 import requests                         # pip3 install requests
 
@@ -79,18 +80,13 @@ class GOOGLEPLAY:
     def traversal(self, packages):
         try:
             urls = self.pkl.load()
+            if urls == None:
+                urls = []
+                heapq.heappush(urls, (2, ""))
             re_package = re.compile(r'details\?id=[^&\n]*')
 
             while urls:
-                url = f"{self.bURL}{urls.pop()}"
-                if '?' in url:
-                    url += "&hl=en_US&gl=US"
-                    package_name = re_package.findall(url)
-                    if len(package_name): 
-                        packages.put([(
-                            package_name[0][11:],
-                            self.parser(url)
-                        )])
+                url = f"{self.bURL}{heapq.heappop(urls)[1]}"
 
                 soup = BeautifulSoup(
                     requests.get(
@@ -108,7 +104,17 @@ class GOOGLEPLAY:
                         else: continue
 
                     if href.startswith("/store/apps") or href.startswith("/store/games"):
-                        urls.add(href)
+                        if '?' in href:
+                            package_name = re_package.findall(href)
+                            if len(package_name):
+                                href += "&hl=en_US&gl=US"
+                                packages.put([(
+                                    package_name[0][11:],
+                                    self.parser(f"{self.bURL}{href}")
+                                )])
+                                heapq.heappush(urls, (0, href))
+                            else: heapq.heappush(urls, (1, href))
+                        else: heapq.heappush(urls, (2, href))
 
                 self.pkl.dump(urls)
         except Exception as e: print(e)
@@ -129,3 +135,7 @@ if __name__ == "__main__":
     install = Process(target=gp.install, args=("com.supercell.brawlstars", ))
     install.start()
 
+    while True:
+        if not packages.empty():
+            print(packages.get())
+        else: sleep(10)
