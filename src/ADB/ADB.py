@@ -11,8 +11,8 @@ class ADB:
             host="127.0.0.1",
             port=5037
         )
-        devices = client.devices()
-        self.device0 = devices[0]
+        self.devices = client.devices()
+        self.device0 = self.devices[0]
 
         self.timeout = 10
         self.APK = None
@@ -24,10 +24,13 @@ class ADB:
         print(f"[0/3] Wait for {self.APK}")
 
         cnt = 0
-        while cnt < self.timeout:
-            if self.device0.is_installed(self.APK): return True
-            cnt += 1
-            sleep(1)
+        for device in self.devices:
+            while cnt < self.timeout:
+                if device.is_installed(self.APK):
+                    self.device0 = device
+                    return True
+                cnt += 1
+                sleep(1)
 
         return False
     
