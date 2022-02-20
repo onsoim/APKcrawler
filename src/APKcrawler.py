@@ -11,19 +11,19 @@ from SQLite.SQLite import SQLITE                #
 from time import *
 
 
-def jobA(extracts, extracts_t):
+def jobA(extracts_t):
     adb = ADB()
+    sqlite = SQLITE()
 
     while True:
-        if not extracts.empty():
-            for package in extracts.get():
-                adb.setAPK(package)
-                if adb.is_installed() and adb.pull() and adb.uninstall():
-                    print(f"[3/3] Done {package}")
-                    extracts_t.put([(
-                        package,
-                        datetime.now()
-                    )])
+        for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
+            adb.setAPK(package)
+            if adb.is_installed() and adb.pull() and adb.uninstall():
+                print(f"[3/3] Done {package}")
+                extracts_t.put([(
+                    package,
+                    datetime.now()
+                )])
         else: sleep(3)
 
 def main():
@@ -34,11 +34,10 @@ def main():
     gp = GOOGLEPLAY(parser['GOOGLE'])
 
     packages    = Manager().Queue()
-    extracts    = Manager().Queue()
     extracts_t  = Manager().Queue()
 
     Process(target = gp.traversal, args = (packages,)).start()
-    Process(target = jobA, args = (extracts, extracts_t)).start()
+    Process(target = jobA, args = (extracts_t, )).start()
 
     sqlite = SQLITE()
 
@@ -70,9 +69,6 @@ def main():
                     where   = { "package_name": package }
                 )
 
-        if extracts.empty():
-            for package in sqlite.read({"install_date": "NOT NULL", "extract_date": None}):
-                extracts.put([package])
 
 if __name__ == "__main__":
     while True:
