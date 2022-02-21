@@ -1,0 +1,10 @@
+
+# temporal ignore till finished project
+*.apk
+
+# data file
+*.db
+*.pickle
+
+# byte code
+*.pyc
