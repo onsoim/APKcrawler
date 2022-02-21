@@ -14,6 +14,7 @@ from time import *
 
 import json
 import heapq
+import os
 import re
 import requests                         # pip3 install requests
 
@@ -25,6 +26,21 @@ class GOOGLEPLAY:
         self.config = config
 
         self.init_driver()
+
+    def init_pkl(self):
+        urls = self.pkl.load()
+
+        if urls == None:
+            urls = []
+            dPath = '../res/data/'
+            if self.config['rank'] and os.path.isdir(dPath):
+                for f in next(os.walk(dPath), (None, None, []))[2]:
+                    with open(os.path.join(dPath, f), 'r') as csv:
+                        for l in csv.readlines():
+                            heapq.heappush(urls, (0, f"/web/store/apps/details?id={l.split(',')[0]}"))
+            else: heapq.heappush(urls, (2, ""))
+
+        return urls
 
     def init_driver(self):
         try: self.driver.quit()
@@ -59,7 +75,7 @@ class GOOGLEPLAY:
 
         # If package installed before
         except Exception as e:
-            import inspect, os
+            import inspect
             print(f"[*] {os.path.abspath(__file__)} > {inspect.stack()[0][3]}")
             print(e)
 
@@ -87,10 +103,7 @@ class GOOGLEPLAY:
 
     def traversal(self, packages):
         try:
-            urls = self.pkl.load()
-            if urls == None:
-                urls = []
-                heapq.heappush(urls, (2, ""))
+            urls = self.init_pkl()
             re_package = re.compile(r'details\?id=[^&\n]*')
 
             while urls:
