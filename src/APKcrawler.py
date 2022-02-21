@@ -53,7 +53,7 @@ def main():
                             where   = { "package_name": package }
                         )
         else:
-            for package in sqlite.read({"install_date": None}):
+            for package in sqlite.read({"extract_date": None}):
                 res, t = gp.install(package)
                 if res:
                     print(f"[I] {package}")
