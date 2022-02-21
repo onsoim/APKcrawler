@@ -147,4 +147,3 @@ if __name__ == "__main__":
         if not packages.empty():
             print(packages.get())
         else: sleep(10)
-s
