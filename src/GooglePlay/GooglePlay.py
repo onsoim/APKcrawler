@@ -24,13 +24,19 @@ class GOOGLEPLAY:
         self.pkl    = PICKLE("./urls.pickle")
         self.config = config
 
-    def install(self, package_name):
+        self.init_driver()
+
+    def init_driver(self):
+        try: self.driver.quit()
+        except: pass
+
         self.google = GOOGLE()
         self.google.login(self.config)
 
         self.driver = self.google.driver
-        self.wait   = WebDriverWait(self.driver, 60)
+        self.wait   = WebDriverWait(self.driver, 30)
 
+    def install(self, package_name):
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Search"]')))
         self.driver.get(f"{self.bURL}/web/store/apps/details?id={package_name}&hl=en_US")
 
@@ -41,23 +47,25 @@ class GOOGLEPLAY:
             if msg == "This app is available for your device":
 
                 self.driver.find_element(By.CSS_SELECTOR, '[class="VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc MjT6xe sOCCfd brKGGd BhQfub  zwjsl"]').click()
-                sleep(5)
+                sleep(15)
 
                 ActionChains(self.driver).send_keys(Keys.ENTER).perform()
 
                 self.google.setPassword()
-                sleep(10)
+                sleep(20)
 
                 return (True, datetime.now())
-            raise Exception(f"[e] {package_name}: {msg}")
+            print(f"[e] {package_name}: {msg}")
 
         # If package installed before
         except Exception as e:
             import inspect, os
             print(f"[*] {os.path.abspath(__file__)} > {inspect.stack()[0][3]}")
             print(e)
-            return (False, None)
-        finally: self.driver.quit()
+
+            self.init_driver()
+
+        return (False, None)
 
     def parser(self, url):
         SCRIPT  = re.compile("AF_initDataCallback[\s\S]*?<\/script")
